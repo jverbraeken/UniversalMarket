@@ -1,0 +1,14 @@
+**.pyc
+**.DS_Store
+.idea/**
+**/_trial_temp/**
+sqlite/**
+ec.pem
+_trial_temp.lock
+anydex/test/temp/**
+.coverage
+cover/**
+build/**
+dist/**
+ipv8_service.py
+ipv8/**
