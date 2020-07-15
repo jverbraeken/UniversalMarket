@@ -1,6 +1,7 @@
 import string
 from random import choice
 
+from anydex.test import util
 from ipv8.util import succeed
 
 from anydex.wallet.wallet import InsufficientFunds, Wallet
@@ -101,7 +102,7 @@ class DummyWallet1(BaseDummyWallet):
         return 'Dummy 1'
 
     def get_identifier(self):
-        return 'DUM1'
+        return util.urn_dum1
 
 
 class DummyWallet2(BaseDummyWallet):
@@ -114,7 +115,7 @@ class DummyWallet2(BaseDummyWallet):
         return 'Dummy 2'
 
     def get_identifier(self):
-        return 'DUM2'
+        return util.urn_dum2
 
     def precision(self):
         return 1

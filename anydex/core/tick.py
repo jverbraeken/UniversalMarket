@@ -1,11 +1,12 @@
 import time
 from binascii import hexlify, unhexlify
 
+from anydex.core.urn import URN
 from ipv8.attestation.trustchain.block import GENESIS_HASH
 from ipv8.database import database_blob
 
 from anydex.core import MAX_ORDER_TIMEOUT
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.assetpair import AssetPair
 from anydex.core.message import TraderId
 from anydex.core.order import OrderId, OrderNumber
@@ -54,14 +55,14 @@ class Tick(object):
 
         tick_cls = Ask if is_ask else Bid
         order_id = OrderId(TraderId(trader_id), OrderNumber(order_number))
-        return tick_cls(order_id, AssetPair(AssetAmount(asset1_amount, str(asset1_type)),
-                                            AssetAmount(asset2_amount, str(asset2_type))),
+        return tick_cls(order_id, AssetPair(ProductAmount(asset1_amount, URN(asset1_type.decode('utf-8'))),
+                                            ProductAmount(asset2_amount, URN(asset2_type.decode('utf-8')))),
                         Timeout(timeout), Timestamp(timestamp), traded=traded, block_hash=bytes(block_hash))
 
     def to_database(self):
         return (database_blob(bytes(self.order_id.trader_id)), int(self.order_id.order_number),
-                self.assets.first.amount, str(self.assets.first.asset_id), self.assets.second.amount,
-                str(self.assets.second.asset_id), int(self.timeout), int(self.timestamp), self.is_ask(),
+                self.assets.first.amount, str(self.assets.first.urn), self.assets.second.amount,
+                str(self.assets.second.urn), int(self.timeout), int(self.timestamp), self.is_ask(),
                 self.traded, database_blob(self.block_hash))
 
     @classmethod

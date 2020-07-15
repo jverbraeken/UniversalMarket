@@ -1,12 +1,13 @@
 import unittest
 
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.assetpair import AssetPair
 from anydex.core.message import TraderId
 from anydex.core.order import Order, OrderId, OrderNumber
 from anydex.core.order_repository import MemoryOrderRepository
 from anydex.core.timeout import Timeout
 from anydex.core.timestamp import Timestamp
+from anydex.test import util
 
 
 class MemoryOrderRepositoryTestSuite(unittest.TestCase):
@@ -16,9 +17,9 @@ class MemoryOrderRepositoryTestSuite(unittest.TestCase):
         # Object creation
         self.memory_order_repository = MemoryOrderRepository(b'0' * 20)
         self.order_id = OrderId(TraderId(b'0' * 20), OrderNumber(1))
-        self.order = Order(self.order_id, AssetPair(AssetAmount(100, 'BTC'), AssetAmount(30, 'MC')),
+        self.order = Order(self.order_id, AssetPair(ProductAmount(100, util.urn_btc), ProductAmount(30, util.urn_mb)),
                            Timeout(0), Timestamp(10), False)
-        self.order2 = Order(self.order_id, AssetPair(AssetAmount(1000, 'BTC'), AssetAmount(30, 'MC')),
+        self.order2 = Order(self.order_id, AssetPair(ProductAmount(1000, util.urn_btc), ProductAmount(30, util.urn_mb)),
                             Timeout(0), Timestamp(10), False)
 
     def test_add(self):

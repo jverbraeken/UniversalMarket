@@ -1,9 +1,10 @@
 import logging
 from binascii import hexlify, unhexlify
 
+from anydex.core.urn import URN
 from ipv8.database import database_blob
 
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.assetpair import AssetPair
 from anydex.core.message import TraderId
 from anydex.core.order import OrderId, OrderNumber
@@ -69,8 +70,8 @@ class Transaction(object):
 
         self._transaction_id = transaction_id
         self._assets = assets
-        self._transferred_assets = AssetPair(AssetAmount(0, assets.first.asset_id),
-                                             AssetAmount(0, assets.second.asset_id))
+        self._transferred_assets = AssetPair(ProductAmount(0, assets.first.urn),
+                                             ProductAmount(0, assets.second.urn))
         self._order_id = order_id
         self._partner_order_id = partner_order_id
         self._timestamp = timestamp
@@ -98,14 +99,14 @@ class Transaction(object):
 
         transaction_id = TransactionId(bytes(transaction_id))
         transaction = cls(transaction_id,
-                          AssetPair(AssetAmount(asset1_amount, asset1_type.decode()),
-                                    AssetAmount(asset2_amount, asset2_type.decode())),
+                          AssetPair(ProductAmount(asset1_amount, URN(asset1_type.decode())),
+                                    ProductAmount(asset2_amount, URN(asset2_type.decode()))),
                           OrderId(TraderId(bytes(trader_id)), OrderNumber(order_number)),
                           OrderId(TraderId(bytes(partner_trader_id)), OrderNumber(partner_order_number)),
                           Timestamp(transaction_timestamp))
 
-        transaction._transferred_assets = AssetPair(AssetAmount(asset1_transferred, asset1_type.decode()),
-                                                    AssetAmount(asset2_transferred, asset2_type.decode()))
+        transaction._transferred_assets = AssetPair(ProductAmount(asset1_transferred, URN(asset1_type.decode())),
+                                                    ProductAmount(asset2_transferred, URN(asset2_type.decode())))
         transaction.sent_wallet_info = sent_wallet_info
         transaction.received_wallet_info = received_wallet_info
         transaction.incoming_address = WalletAddress(str(incoming_address))
@@ -124,8 +125,8 @@ class Transaction(object):
         return (database_blob(bytes(self.order_id.trader_id)), database_blob(bytes(self.transaction_id)),
                 int(self.order_id.order_number),
                 database_blob(bytes(self.partner_order_id.trader_id)), int(self.partner_order_id.order_number),
-                self.assets.first.amount, str(self.assets.first.asset_id), self.transferred_assets.first.amount,
-                self.assets.second.amount, str(self.assets.second.asset_id),
+                self.assets.first.amount, str(self.assets.first.urn), self.transferred_assets.first.amount,
+                self.assets.second.amount, str(self.assets.second.urn),
                 self.transferred_assets.second.amount, int(self.timestamp), self.sent_wallet_info,
                 self.received_wallet_info, str(self.incoming_address), str(self.outgoing_address),
                 str(self.partner_incoming_address), str(self.partner_outgoing_address))
@@ -224,7 +225,7 @@ class Transaction(object):
         """
         self._logger.debug("Adding transferred assets %s to transaction %s",
                            payment.transferred_assets, self.transaction_id.as_hex())
-        if payment.transferred_assets.asset_id == self.transferred_assets.first.asset_id:
+        if payment.transferred_assets.urn == self.transferred_assets.first.urn:
             self.transferred_assets.first += payment.transferred_assets
         else:
             self.transferred_assets.second += payment.transferred_assets

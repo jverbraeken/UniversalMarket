@@ -1,7 +1,7 @@
 import time
 import unittest
 
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.assetpair import AssetPair
 from anydex.core.message import TraderId
 from anydex.core.order import Order, OrderId, OrderNumber, TickWasNotReserved
@@ -10,6 +10,7 @@ from anydex.core.timeout import Timeout
 from anydex.core.timestamp import Timestamp
 from anydex.core.trade import Trade
 from anydex.core.transaction import Transaction, TransactionId
+from anydex.test import util
 
 
 class OrderTestSuite(unittest.TestCase):
@@ -18,28 +19,28 @@ class OrderTestSuite(unittest.TestCase):
     def setUp(self):
         # Object creation
         self.transaction_id = TransactionId(b'a' * 32)
-        self.transaction = Transaction(self.transaction_id, AssetPair(AssetAmount(100, 'BTC'), AssetAmount(30, 'MC')),
+        self.transaction = Transaction(self.transaction_id, AssetPair(ProductAmount(100, util.urn_btc), ProductAmount(30, util.urn_mb)),
                                        OrderId(TraderId(b'0' * 20), OrderNumber(2)),
                                        OrderId(TraderId(b'1' * 20), OrderNumber(1)), Timestamp(0))
         self.proposed_trade = Trade.propose(TraderId(b'0' * 20),
                                             OrderId(TraderId(b'0' * 20), OrderNumber(2)),
                                             OrderId(TraderId(b'1' * 20), OrderNumber(3)),
-                                            AssetPair(AssetAmount(100, 'BTC'), AssetAmount(30, 'MC')), Timestamp(0))
+                                            AssetPair(ProductAmount(100, util.urn_btc), ProductAmount(30, util.urn_mb)), Timestamp(0))
 
         self.tick = Tick(OrderId(TraderId(b'0' * 20), OrderNumber(1)),
-                         AssetPair(AssetAmount(5, 'BTC'), AssetAmount(5, 'MC')),
+                         AssetPair(ProductAmount(5, util.urn_btc), ProductAmount(5, util.urn_mb)),
                          Timeout(0), Timestamp(00), True)
         self.tick2 = Tick(OrderId(TraderId(b'0' * 20), OrderNumber(2)),
-                          AssetPair(AssetAmount(500, 'BTC'), AssetAmount(5, 'MC')),
+                          AssetPair(ProductAmount(500, util.urn_btc), ProductAmount(5, util.urn_mb)),
                           Timeout(0), Timestamp(0), True)
 
         self.order_timestamp = Timestamp.now()
         self.order = Order(OrderId(TraderId(b'0' * 20), OrderNumber(3)),
-                           AssetPair(AssetAmount(50, 'BTC'), AssetAmount(40, 'MC')),
+                           AssetPair(ProductAmount(50, util.urn_btc), ProductAmount(40, util.urn_mb)),
                            Timeout(5000), self.order_timestamp, False)
         self.order.set_verified()
         self.order2 = Order(OrderId(TraderId(b'0' * 20), OrderNumber(4)),
-                            AssetPair(AssetAmount(50, 'BTC'), AssetAmount(10, 'MC')),
+                            AssetPair(ProductAmount(50, util.urn_btc), ProductAmount(10, util.urn_mb)),
                             Timeout(5), Timestamp(int(time.time() * 1000) - 1000 * 1000), True)
         self.order2.set_verified()
 
@@ -49,12 +50,12 @@ class OrderTestSuite(unittest.TestCase):
         """
         self.order.reserve_quantity_for_tick(OrderId(TraderId(b'5' * 20), OrderNumber(1)), 10)
         self.assertEqual(self.order.traded_quantity, 0)
-        self.order.add_trade(OrderId(TraderId(b'5' * 20), OrderNumber(1)), AssetAmount(10, 'BTC'))
+        self.order.add_trade(OrderId(TraderId(b'5' * 20), OrderNumber(1)), ProductAmount(10, util.urn_btc))
         self.assertEqual(self.order.traded_quantity, 10)
 
         self.order.reserve_quantity_for_tick(OrderId(TraderId(b'6' * 20), OrderNumber(1)), 40)
-        self.order.add_trade(OrderId(TraderId(b'6' * 20), OrderNumber(1)), AssetAmount(40, 'MC'))
-        self.order.add_trade(OrderId(TraderId(b'6' * 20), OrderNumber(1)), AssetAmount(40, 'BTC'))
+        self.order.add_trade(OrderId(TraderId(b'6' * 20), OrderNumber(1)), ProductAmount(40, util.urn_mb))
+        self.order.add_trade(OrderId(TraderId(b'6' * 20), OrderNumber(1)), ProductAmount(40, util.urn_btc))
         self.assertTrue(self.order.is_complete())
         self.assertFalse(self.order.cancelled)
 
@@ -63,27 +64,27 @@ class OrderTestSuite(unittest.TestCase):
         Test the acceptable price method
         """
         order = Order(OrderId(TraderId(b'0' * 20), OrderNumber(3)),
-                      AssetPair(AssetAmount(60, 'BTC'), AssetAmount(30, 'MB')),
+                      AssetPair(ProductAmount(60, util.urn_btc), ProductAmount(30, util.urn_mb)),
                       Timeout(5000), self.order_timestamp, True)
 
-        pair = AssetPair(AssetAmount(60, 'BTC'), AssetAmount(30, 'MB'))
+        pair = AssetPair(ProductAmount(60, util.urn_btc), ProductAmount(30, util.urn_mb))
         self.assertTrue(order.has_acceptable_price(pair))
 
-        pair = AssetPair(AssetAmount(60, 'BTC'), AssetAmount(15, 'MB'))
+        pair = AssetPair(ProductAmount(60, util.urn_btc), ProductAmount(15, util.urn_mb))
         self.assertFalse(order.has_acceptable_price(pair))
 
-        pair = AssetPair(AssetAmount(60, 'BTC'), AssetAmount(60, 'MB'))
+        pair = AssetPair(ProductAmount(60, util.urn_btc), ProductAmount(60, util.urn_mb))
         self.assertTrue(order.has_acceptable_price(pair))
 
         order._is_ask = False
 
-        pair = AssetPair(AssetAmount(60, 'BTC'), AssetAmount(30, 'MB'))
+        pair = AssetPair(ProductAmount(60, util.urn_btc), ProductAmount(30, util.urn_mb))
         self.assertTrue(order.has_acceptable_price(pair))
 
-        pair = AssetPair(AssetAmount(60, 'BTC'), AssetAmount(15, 'MB'))
+        pair = AssetPair(ProductAmount(60, util.urn_btc), ProductAmount(15, util.urn_mb))
         self.assertTrue(order.has_acceptable_price(pair))
 
-        pair = AssetPair(AssetAmount(60, 'BTC'), AssetAmount(60, 'MB'))
+        pair = AssetPair(ProductAmount(60, util.urn_btc), ProductAmount(60, util.urn_mb))
         self.assertFalse(order.has_acceptable_price(pair))
 
     def test_is_ask(self):
@@ -118,7 +119,7 @@ class OrderTestSuite(unittest.TestCase):
     def test_release_unreserved_quantity(self):
         # Test for release unreserved quantity
         with self.assertRaises(TickWasNotReserved):
-            self.order.release_quantity_for_tick(self.tick.order_id, AssetAmount(5, 'BTC'))
+            self.order.release_quantity_for_tick(self.tick.order_id, ProductAmount(5, util.urn_btc))
 
     def test_is_valid(self):
         self.assertTrue(self.order.is_valid())
@@ -154,11 +155,11 @@ class OrderTestSuite(unittest.TestCase):
             "assets": {
                 "first": {
                     "amount": 50,
-                    "type": "BTC",
+                    "type": str(util.urn_btc),
                 },
                 "second": {
                     "amount": 40,
-                    "type": "MC"
+                    "type": str(util.urn_mb)
                 }
             },
             "reserved_quantity": 0,

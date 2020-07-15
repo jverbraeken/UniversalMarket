@@ -3,6 +3,7 @@ import unittest
 from anydex.core.price import Price
 from anydex.core.pricelevel import PriceLevel
 from anydex.core.pricelevel_list import PriceLevelList
+from anydex.test import util
 
 
 class PriceLevelListTestSuite(unittest.TestCase):
@@ -12,10 +13,10 @@ class PriceLevelListTestSuite(unittest.TestCase):
         # Object creation
         self.price_level_list = PriceLevelList()
         self.price_level_list2 = PriceLevelList()
-        self.price = Price(1, 1, 'BTC', 'MB')
-        self.price2 = Price(2, 1, 'BTC', 'MB')
-        self.price3 = Price(3, 1, 'BTC', 'MB')
-        self.price4 = Price(4, 1, 'BTC', 'MB')
+        self.price = Price(1, 1, util.urn_btc, util.urn_mb)
+        self.price2 = Price(2, 1, util.urn_btc, util.urn_mb)
+        self.price3 = Price(3, 1, util.urn_btc, util.urn_mb)
+        self.price4 = Price(4, 1, util.urn_btc, util.urn_mb)
         self.price_level = PriceLevel(self.price)
         self.price_level2 = PriceLevel(self.price2)
         self.price_level3 = PriceLevel(self.price3)

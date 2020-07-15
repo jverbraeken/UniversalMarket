@@ -1,4 +1,4 @@
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.assetpair import AssetPair
 from anydex.core.block import MarketBlock
 from anydex.core.message import TraderId
@@ -8,6 +8,7 @@ from anydex.core.timeout import Timeout
 from anydex.core.timestamp import Timestamp
 from anydex.core.trade import AcceptedTrade
 from anydex.core.transaction import Transaction, TransactionId
+from anydex.test import util
 from anydex.test.base import BaseTestCase
 
 
@@ -20,12 +21,12 @@ class TestMarketBlock(BaseTestCase):
         BaseTestCase.setUp(self)
 
         self.ask = Ask(OrderId(TraderId(b'0' * 20), OrderNumber(1)),
-                       AssetPair(AssetAmount(30, 'BTC'), AssetAmount(30, 'MB')), Timeout(30), Timestamp(0), True)
+                       AssetPair(ProductAmount(30, util.urn_btc), ProductAmount(30, util.urn_mb)), Timeout(30), Timestamp(0), True)
         self.bid = Ask(OrderId(TraderId(b'1' * 20), OrderNumber(1)),
-                       AssetPair(AssetAmount(30, 'BTC'), AssetAmount(30, 'MB')), Timeout(30), Timestamp(0), False)
+                       AssetPair(ProductAmount(30, util.urn_btc), ProductAmount(30, util.urn_mb)), Timeout(30), Timestamp(0), False)
         self.accepted_trade = AcceptedTrade(TraderId(b'0' * 20), OrderId(TraderId(b'0' * 20), OrderNumber(1)),
                                             OrderId(TraderId(b'1' * 20), OrderNumber(1)), 1234,
-                                            AssetPair(AssetAmount(30, 'BTC'), AssetAmount(30, 'MB')), Timestamp(0))
+                                            AssetPair(ProductAmount(30, util.urn_btc), ProductAmount(30, util.urn_mb)), Timestamp(0))
         self.transaction = Transaction.from_accepted_trade(self.accepted_trade, TransactionId(b'a' * 32))
 
         ask_tx = self.ask.to_block_dict()
@@ -58,7 +59,7 @@ class TestMarketBlock(BaseTestCase):
             'transaction_id': 'a' * 64,
             'transferred': {
                 'amount': 3,
-                'type': 'BTC'
+                'type': util.urn_btc
             },
             'payment_id': 'a',
             'address_from': 'a',
@@ -197,13 +198,13 @@ class TestMarketBlock(BaseTestCase):
         Test the method to verify whether an asset pair is valid
         """
         self.assertFalse(MarketBlock.is_valid_asset_pair({'a': 'b'}))
-        self.assertFalse(MarketBlock.is_valid_asset_pair({'first': {'amount': 3, 'type': 'DUM1'},
+        self.assertFalse(MarketBlock.is_valid_asset_pair({'first': {'amount': 3, 'type': util.urn_dum1},
                                                           'second': {'amount': 3}}))
-        self.assertFalse(MarketBlock.is_valid_asset_pair({'first': {'type': 'DUM1'},
-                                                          'second': {'amount': 3, 'type': 'DUM2'}}))
-        self.assertFalse(MarketBlock.is_valid_asset_pair({'first': {'amount': "4", 'type': 'DUM1'},
-                                                          'second': {'amount': 3, 'type': 'DUM2'}}))
-        self.assertFalse(MarketBlock.is_valid_asset_pair({'first': {'amount': 4, 'type': 'DUM1'},
-                                                          'second': {'amount': "3", 'type': 'DUM2'}}))
-        self.assertFalse(MarketBlock.is_valid_asset_pair({'first': {'amount': -4, 'type': 'DUM1'},
-                                                          'second': {'amount': 3, 'type': 'DUM2'}}))
+        self.assertFalse(MarketBlock.is_valid_asset_pair({'first': {'type': util.urn_dum1},
+                                                          'second': {'amount': 3, 'type': util.urn_dum2}}))
+        self.assertFalse(MarketBlock.is_valid_asset_pair({'first': {'amount': "4", 'type': util.urn_dum1},
+                                                          'second': {'amount': 3, 'type': util.urn_dum2}}))
+        self.assertFalse(MarketBlock.is_valid_asset_pair({'first': {'amount': 4, 'type': util.urn_dum1},
+                                                          'second': {'amount': "3", 'type': util.urn_dum2}}))
+        self.assertFalse(MarketBlock.is_valid_asset_pair({'first': {'amount': -4, 'type': util.urn_dum1},
+                                                          'second': {'amount': 3, 'type': util.urn_dum2}}))

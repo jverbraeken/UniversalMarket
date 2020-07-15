@@ -2,7 +2,7 @@ from aiohttp import web
 
 from ipv8.REST.base_endpoint import HTTP_BAD_REQUEST, Response
 
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.assetpair import AssetPair
 from anydex.restapi.base_market_endpoint import BaseMarketEndpoint
 
@@ -26,8 +26,8 @@ class BaseAsksBidsEndpoint(BaseMarketEndpoint):
         first_asset_type = parameters['first_asset_type']
         second_asset_type = parameters['second_asset_type']
 
-        return AssetPair(AssetAmount(first_asset_amount, first_asset_type),
-                         AssetAmount(second_asset_amount, second_asset_type)), timeout
+        return AssetPair(ProductAmount(first_asset_amount, first_asset_type),
+                         ProductAmount(second_asset_amount, second_asset_type)), timeout
 
 
 class AsksEndpoint(BaseAsksBidsEndpoint):

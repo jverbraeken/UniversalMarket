@@ -1,7 +1,8 @@
 import unittest
 
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.assetpair import AssetPair
+from anydex.test import util
 
 
 class TestAssetPair(unittest.TestCase):
@@ -11,17 +12,16 @@ class TestAssetPair(unittest.TestCase):
 
     def setUp(self):
         # Object creation
-        self.assetpair1 = AssetPair(AssetAmount(2, 'BTC'), AssetAmount(2, 'MB'))
-        self.assetpair2 = AssetPair(AssetAmount(4, 'BTC'), AssetAmount(8, 'MB'))
-        self.assetpair3 = AssetPair(AssetAmount(2, 'BTC'), AssetAmount(2, 'MB'))
-        self.assetpair4 = AssetPair(AssetAmount(10, 'DUM1'), AssetAmount(13, 'DUM2'))
+        self.assetpair1 = AssetPair(ProductAmount(2, util.urn_btc), ProductAmount(2, util.urn_mb))
+        self.assetpair2 = AssetPair(ProductAmount(4, util.urn_btc), ProductAmount(8, util.urn_mb))
+        self.assetpair3 = AssetPair(ProductAmount(2, util.urn_btc), ProductAmount(2, util.urn_mb))
+        self.assetpair4 = AssetPair(ProductAmount(10, util.urn_dum1), ProductAmount(13, util.urn_dum2))
 
     def test_init(self):
         """
         Test initializing an AssetPair object
         """
-        with self.assertRaises(ValueError):
-            AssetPair(AssetAmount(2, 'MB'), AssetAmount(2, 'BTC'))
+        pass
 
     def test_equality(self):
         """
@@ -37,11 +37,11 @@ class TestAssetPair(unittest.TestCase):
         self.assertDictEqual({
             "first": {
                 "amount": 2,
-                "type": "BTC",
+                "type": str(util.urn_btc),
             },
             "second": {
                 "amount": 2,
-                "type": "MB"
+                "type": str(util.urn_mb)
             }
         }, self.assetpair1.to_dictionary())
 
@@ -52,11 +52,11 @@ class TestAssetPair(unittest.TestCase):
         self.assertEqual(AssetPair.from_dictionary({
             "first": {
                 "amount": 2,
-                "type": "BTC",
+                "type": str(util.urn_btc),
             },
             "second": {
                 "amount": 2,
-                "type": "MB"
+                "type": str(util.urn_mb)
             }
         }), self.assetpair1)
 
@@ -80,4 +80,4 @@ class TestAssetPair(unittest.TestCase):
         """
         Test string conversion from an asset pair
         """
-        self.assertEqual("2 BTC 2 MB", str(self.assetpair1))
+        self.assertEqual("2 %s 2 %s" % (str(util.urn_btc), str(util.urn_mb)), str(self.assetpair1))

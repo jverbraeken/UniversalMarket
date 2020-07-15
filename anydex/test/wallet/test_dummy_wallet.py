@@ -1,5 +1,6 @@
 from asyncio import Future
 
+from anydex.test import util
 from anydex.test.base import AbstractServer
 from anydex.test.util import timeout
 from anydex.wallet.dummy_wallet import BaseDummyWallet, DummyWallet1, DummyWallet2
@@ -21,8 +22,8 @@ class TestDummyWallet(AbstractServer):
         Test the identifier of a dummy wallet
         """
         self.assertEqual(self.dummy_wallet.get_identifier(), 'DUM')
-        self.assertEqual(DummyWallet1().get_identifier(), 'DUM1')
-        self.assertEqual(DummyWallet2().get_identifier(), 'DUM2')
+        self.assertEqual(DummyWallet1().get_identifier(), util.urn_dum1)
+        self.assertEqual(DummyWallet2().get_identifier(), util.urn_dum2)
 
     def test_wallet_name(self):
         """

@@ -4,6 +4,7 @@ from base64 import b64decode
 from binascii import hexlify, unhexlify
 from functools import wraps
 
+from anydex.core.urn import URN
 from ipv8.attestation.trustchain.listener import BlockListener
 from ipv8.attestation.trustchain.payload import HalfBlockBroadcastPayload, HalfBlockPairBroadcastPayload,\
     HalfBlockPairPayload
@@ -457,12 +458,12 @@ class MarketCommunity(Community, BlockListener):
                 transaction.trading_peer = self.get_peer_from_mid(bytes(transaction.partner_order_id.trader_id))
 
             # Start polling for the payment
-            asset_id = tx["payment"]["transferred"]["type"]
-            if asset_id not in self.wallets or not self.wallets[asset_id].created:
-                self.logger.warning("Wallet for asset %s not found - not signing payment message", asset_id)
+            urn = URN(tx["payment"]["transferred"]["type"])
+            if urn not in self.wallets or not self.wallets[urn].created:
+                self.logger.warning("Wallet for asset %s not found - not signing payment message", urn)
                 return False
 
-            wallet = self.wallets[asset_id]
+            wallet = self.wallets[urn]
             payment = Payment.from_block(block)
             await wallet.monitor_transaction(payment.payment_id.payment_id)
             transaction.add_payment(payment)
@@ -600,11 +601,11 @@ class MarketCommunity(Community, BlockListener):
         Return a tuple of incoming and outgoing payment address of an order.
         """
         if order.is_ask():
-            return (WalletAddress(self.wallets[order.assets.second.asset_id].get_address()),
-                    WalletAddress(self.wallets[order.assets.first.asset_id].get_address()))
+            return (WalletAddress(self.wallets[order.assets.second.urn].get_address()),
+                    WalletAddress(self.wallets[order.assets.first.urn].get_address()))
         else:
-            return (WalletAddress(self.wallets[order.assets.first.asset_id].get_address()),
-                    WalletAddress(self.wallets[order.assets.second.asset_id].get_address()))
+            return (WalletAddress(self.wallets[order.assets.first.urn].get_address()),
+                    WalletAddress(self.wallets[order.assets.second.urn].get_address()))
 
     def match_order_ids(self, order_ids):
         """
@@ -830,21 +831,21 @@ class MarketCommunity(Community, BlockListener):
         Verify whether we are creating a valid order.
         This method raises a RuntimeError if the created order is not valid.
         """
-        if assets.first.asset_id == assets.second.asset_id:
+        if assets.first.urn == assets.second.urn:
             raise RuntimeError("You cannot trade between the same wallet")
 
-        if assets.first.asset_id not in self.wallets or not self.wallets[assets.first.asset_id].created:
-            raise RuntimeError("Please create a %s wallet first" % assets.first.asset_id)
+        if assets.first.urn not in self.wallets or not self.wallets[assets.first.urn].created:
+            raise RuntimeError("Please create a %s wallet first" % assets.first.urn)
 
-        if assets.second.asset_id not in self.wallets or not self.wallets[assets.second.asset_id].created:
-            raise RuntimeError("Please create a %s wallet first" % assets.second.asset_id)
+        if assets.second.urn not in self.wallets or not self.wallets[assets.second.urn].created:
+            raise RuntimeError("Please create a %s wallet first" % assets.second.urn)
 
-        asset1_min_unit = self.wallets[assets.first.asset_id].min_unit()
+        asset1_min_unit = self.wallets[assets.first.urn].min_unit()
         if assets.first.amount < asset1_min_unit:
             raise RuntimeError("The assets to trade should be higher than or equal to the min unit of this asset (%s)."
                                % assets.first)
 
-        asset2_min_unit = self.wallets[assets.second.asset_id].min_unit()
+        asset2_min_unit = self.wallets[assets.second.urn].min_unit()
         if assets.second.amount < asset2_min_unit:
             raise RuntimeError("The assets to trade should be higher than or equal to the min unit of this asset (%s)."
                                % assets.second)
@@ -1716,11 +1717,11 @@ class MarketCommunity(Community, BlockListener):
         order = self.order_manager.order_repository.find_by_id(transaction.order_id)
 
         transfer_amount = transaction.next_payment(order.is_ask())
-        asset_id = transfer_amount.asset_id
+        urn = transfer_amount.urn
 
-        wallet = self.wallets[asset_id]
+        wallet = self.wallets[urn]
         if not wallet or not wallet.created:
-            raise RuntimeError("No %s wallet present" % asset_id)
+            raise RuntimeError("No %s wallet present" % urn)
 
         # While this conditional is not very pretty, the alternative is to move all this logic to the wallet which
         # requires the wallet to know about transactions, the market community and IPv8.

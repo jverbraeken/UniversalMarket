@@ -1,8 +1,9 @@
 from binascii import unhexlify
 
+from anydex.core.urn import URN
 from ipv8.database import database_blob
 
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.message import Message, TraderId
 from anydex.core.payment_id import PaymentId
 from anydex.core.timestamp import Timestamp
@@ -31,7 +32,7 @@ class Payment(Message):
          address_from, address_to, timestamp) = data
 
         transaction_id = TransactionId(bytes(transaction_id))
-        return cls(TraderId(bytes(trader_id)), transaction_id, AssetAmount(transferred_amount, transferred_id.decode()),
+        return cls(TraderId(bytes(trader_id)), transaction_id, ProductAmount(transferred_amount, URN(transferred_id.decode('utf-8'))),
                    WalletAddress(str(address_from)), WalletAddress(str(address_to)), PaymentId(str(payment_id)),
                    Timestamp(timestamp))
 
@@ -42,7 +43,7 @@ class Payment(Message):
         """
         return (database_blob(bytes(self.trader_id)), database_blob(bytes(self.transaction_id)),
                 str(self.payment_id), self.transferred_assets.amount,
-                self.transferred_assets.asset_id, str(self.address_from),
+                str(self.transferred_assets.urn), str(self.address_from),
                 str(self.address_to), int(self.timestamp))
 
     @classmethod
@@ -57,7 +58,7 @@ class Payment(Message):
         tx_dict = block.transaction["payment"]
         return cls(TraderId(unhexlify(tx_dict["trader_id"])),
                    TransactionId(unhexlify(tx_dict["transaction_id"])),
-                   AssetAmount(tx_dict["transferred"]["amount"], tx_dict["transferred"]["type"]),
+                   ProductAmount(tx_dict["transferred"]["amount"], URN(tx_dict["transferred"]["type"])),
                    WalletAddress(tx_dict["address_from"]),
                    WalletAddress(tx_dict["address_to"]),
                    PaymentId(tx_dict["payment_id"]),

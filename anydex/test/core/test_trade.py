@@ -1,12 +1,13 @@
 import unittest
 
 from anydex.core import DeclinedTradeReason
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.assetpair import AssetPair
 from anydex.core.message import TraderId
 from anydex.core.order import OrderId, OrderNumber
 from anydex.core.timestamp import Timestamp
 from anydex.core.trade import CounterTrade, DeclinedTrade, ProposedTrade, Trade
+from anydex.test import util
 
 
 class TradeTestSuite(unittest.TestCase):
@@ -25,13 +26,12 @@ class TradeTestSuite(unittest.TestCase):
 
 class ProposedTradeTestSuite(unittest.TestCase):
     """Proposed trade test cases."""
-
     def setUp(self):
         # Object creation
         self.proposed_trade = Trade.propose(TraderId(b'0' * 20),
                                             OrderId(TraderId(b'0' * 20), OrderNumber(1)),
                                             OrderId(TraderId(b'1' * 20), OrderNumber(2)),
-                                            AssetPair(AssetAmount(60, 'BTC'), AssetAmount(30, 'MB')),
+                                            AssetPair(ProductAmount(60, util.urn_btc), ProductAmount(30, util.urn_mb)),
                                             Timestamp(1462224447117))
 
     def test_to_network(self):
@@ -39,7 +39,7 @@ class ProposedTradeTestSuite(unittest.TestCase):
         self.assertEqual((TraderId(b'0' * 20), Timestamp(1462224447117),
                            OrderNumber(1), OrderId(TraderId(b'1' * 20), OrderNumber(2)),
                            self.proposed_trade.proposal_id,
-                           AssetPair(AssetAmount(60, 'BTC'), AssetAmount(30, 'MB'))), self.proposed_trade.to_network())
+                           AssetPair(ProductAmount(60, util.urn_btc), ProductAmount(30, util.urn_mb))), self.proposed_trade.to_network())
 
     def test_from_network(self):
         # Test for from network
@@ -49,14 +49,14 @@ class ProposedTradeTestSuite(unittest.TestCase):
                                                 "recipient_order_id": OrderId(TraderId(b'1' * 20), OrderNumber(2)),
                                                 "proposal_id": 1234,
                                                 "timestamp": Timestamp(1462224447117),
-                                                "assets": AssetPair(AssetAmount(60, 'BTC'), AssetAmount(30, 'MB'))}))
+                                                "assets": AssetPair(ProductAmount(60, util.urn_btc), ProductAmount(30, util.urn_mb))}))
 
         self.assertEqual(TraderId(b'0' * 20), data.trader_id)
         self.assertEqual(OrderId(TraderId(b'0' * 20), OrderNumber(1)), data.order_id)
         self.assertEqual(OrderId(TraderId(b'1' * 20), OrderNumber(2)),
                           data.recipient_order_id)
         self.assertEqual(1234, data.proposal_id)
-        self.assertEqual(AssetPair(AssetAmount(60, 'BTC'), AssetAmount(30, 'MB')), data.assets)
+        self.assertEqual(AssetPair(ProductAmount(60, util.urn_btc), ProductAmount(30, util.urn_mb)), data.assets)
         self.assertEqual(Timestamp(1462224447117), data.timestamp)
 
 
@@ -68,7 +68,7 @@ class DeclinedTradeTestSuite(unittest.TestCase):
         self.proposed_trade = Trade.propose(TraderId(b'0' * 20),
                                             OrderId(TraderId(b'0' * 20), OrderNumber(1)),
                                             OrderId(TraderId(b'1' * 20), OrderNumber(2)),
-                                            AssetPair(AssetAmount(60, 'BTC'), AssetAmount(30, 'MB')),
+                                            AssetPair(ProductAmount(60, util.urn_btc), ProductAmount(30, util.urn_mb)),
                                             Timestamp(1462224447117))
         self.declined_trade = Trade.decline(TraderId(b'0' * 20),
                                             Timestamp(1462224447117), self.proposed_trade,
@@ -109,16 +109,15 @@ class DeclinedTradeTestSuite(unittest.TestCase):
 
 class CounterTradeTestSuite(unittest.TestCase):
     """Counter trade test cases."""
-
     def setUp(self):
         # Object creation
         self.proposed_trade = Trade.propose(TraderId(b'0' * 20),
                                             OrderId(TraderId(b'0' * 20), OrderNumber(1)),
                                             OrderId(TraderId(b'1' * 20), OrderNumber(2)),
-                                            AssetPair(AssetAmount(60, 'BTC'), AssetAmount(30, 'MB')),
+                                            AssetPair(ProductAmount(60, util.urn_btc), ProductAmount(30, util.urn_mb)),
                                             Timestamp(1462224447117))
-        self.counter_trade = Trade.counter(TraderId(b'0' * 20), AssetPair(AssetAmount(60, 'BTC'),
-                                                                          AssetAmount(30, 'MB')),
+        self.counter_trade = Trade.counter(TraderId(b'0' * 20), AssetPair(ProductAmount(60, util.urn_btc),
+                                                                          ProductAmount(30, util.urn_mb)),
                                            Timestamp(1462224447117), self.proposed_trade)
 
     def test_to_network(self):
@@ -126,7 +125,7 @@ class CounterTradeTestSuite(unittest.TestCase):
         self.assertEqual(
             ((TraderId(b'0' * 20), Timestamp(1462224447117), OrderNumber(2),
               OrderId(TraderId(b'0' * 20), OrderNumber(1)), self.proposed_trade.proposal_id,
-              AssetPair(AssetAmount(60, 'BTC'), AssetAmount(30, 'MB')))), self.counter_trade.to_network())
+              AssetPair(ProductAmount(60, util.urn_btc), ProductAmount(30, util.urn_mb)))), self.counter_trade.to_network())
 
     def test_from_network(self):
         # Test for from network
@@ -136,12 +135,12 @@ class CounterTradeTestSuite(unittest.TestCase):
                                                "order_number": OrderNumber(1),
                                                "recipient_order_id": OrderId(TraderId(b'1' * 20), OrderNumber(2)),
                                                "proposal_id": 1236,
-                                               "assets": AssetPair(AssetAmount(60, 'BTC'), AssetAmount(30, 'MB')), }))
+                                               "assets": AssetPair(ProductAmount(60, util.urn_btc), ProductAmount(30, util.urn_mb)), }))
 
         self.assertEqual(TraderId(b'0' * 20), data.trader_id)
         self.assertEqual(OrderId(TraderId(b'0' * 20), OrderNumber(1)), data.order_id)
         self.assertEqual(OrderId(TraderId(b'1' * 20), OrderNumber(2)),
                           data.recipient_order_id)
         self.assertEqual(1236, data.proposal_id)
-        self.assertEqual(AssetPair(AssetAmount(60, 'BTC'), AssetAmount(30, 'MB')), data.assets)
+        self.assertEqual(AssetPair(ProductAmount(60, util.urn_btc), ProductAmount(30, util.urn_mb)), data.assets)
         self.assertEqual(Timestamp(1462224447117), data.timestamp)

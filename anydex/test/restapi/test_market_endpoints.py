@@ -1,5 +1,5 @@
 import anydex.util.json_util as json
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.assetpair import AssetPair
 from anydex.core.message import TraderId
 from anydex.core.order import OrderId, OrderNumber
@@ -10,6 +10,8 @@ from anydex.core.timestamp import Timestamp
 from anydex.core.trade import AcceptedTrade
 from anydex.core.transaction import Transaction, TransactionId
 from anydex.core.wallet_address import WalletAddress
+
+from anydex.test import util
 from anydex.test.restapi.base import TestRestApiBase
 from anydex.test.util import MockObject, timeout
 
@@ -22,11 +24,11 @@ class TestMarketEndpoint(TestRestApiBase):
         """
         self.accepted_trade = AcceptedTrade(TraderId(b'0' * 20), OrderId(TraderId(b'0' * 20), OrderNumber(1)),
                                             OrderId(TraderId(b'1' * 20), OrderNumber(1)), 1234,
-                                            AssetPair(AssetAmount(30, 'BTC'), AssetAmount(30, 'MB')), Timestamp(0))
+                                            AssetPair(ProductAmount(30, util.urn_btc), ProductAmount(30, util.urn_mb)), Timestamp(0))
         transaction = Transaction.from_accepted_trade(self.accepted_trade, TransactionId(b'a' * 32))
 
         payment = Payment(TraderId(b'0' * 20), transaction.transaction_id,
-                          AssetAmount(20, 'BTC'), WalletAddress('a'), WalletAddress('b'),
+                          ProductAmount(20, util.urn_btc), WalletAddress('a'), WalletAddress('b'),
                           PaymentId('aaa'), Timestamp(4000))
         transaction.add_payment(payment)
         self.nodes[0].overlay.transaction_manager.transaction_repository.update(transaction)
@@ -46,7 +48,7 @@ class TestMarketEndpoint(TestRestApiBase):
         """
         Test whether the API returns the right asks in the order book when performing a request
         """
-        await self.nodes[0].overlay.create_ask(AssetPair(AssetAmount(10, 'DUM1'), AssetAmount(10, 'DUM2')), 3600)
+        await self.nodes[0].overlay.create_ask(AssetPair(ProductAmount(10, util.urn_dum1), ProductAmount(10, util.urn_dum2)), 3600)
         self.should_check_equality = False
         json_response = await self.do_request('asks', expected_code=200)
         self.assertIn('asks', json_response)
@@ -63,8 +65,8 @@ class TestMarketEndpoint(TestRestApiBase):
         post_data = {
             'first_asset_amount': 10,
             'second_asset_amount': 10,
-            'first_asset_type': 'DUM1',
-            'second_asset_type': 'DUM2',
+            'first_asset_type': util.urn_dum1,
+            'second_asset_type': util.urn_dum2,
             'timeout': 3400
         }
         await self.do_request('asks', expected_code=200, request_type='PUT', post_data=post_data)
@@ -76,7 +78,7 @@ class TestMarketEndpoint(TestRestApiBase):
         Test for an error when we don't add an asset amount when creating an ask
         """
         self.should_check_equality = False
-        post_data = {'first_asset_amount': 10, 'first_asset_type': 'DUM1', 'second_asset_type': 'DUM2', 'timeout': 3400}
+        post_data = {'first_asset_amount': 10, 'first_asset_type': util.urn_dum1, 'second_asset_type': util.urn_dum2, 'timeout': 3400}
         await self.do_request('asks', expected_code=400, request_type='PUT', post_data=post_data)
 
     @timeout(10)
@@ -85,7 +87,7 @@ class TestMarketEndpoint(TestRestApiBase):
         Test for an error when we don't add an asset type when creating an ask
         """
         self.should_check_equality = False
-        post_data = {'first_asset_amount': 10, 'second_asset_amount': 10, 'second_asset_type': 'DUM2', 'timeout': 3400}
+        post_data = {'first_asset_amount': 10, 'second_asset_amount': 10, 'second_asset_type': util.urn_dum2, 'timeout': 3400}
         await self.do_request('asks', expected_code=400, request_type='PUT', post_data=post_data)
 
     @timeout(10)
@@ -93,7 +95,7 @@ class TestMarketEndpoint(TestRestApiBase):
         """
         Test whether the API returns the right bids in the order book when performing a request
         """
-        await self.nodes[0].overlay.create_bid(AssetPair(AssetAmount(10, 'DUM1'), AssetAmount(10, 'DUM2')), 3600)
+        await self.nodes[0].overlay.create_bid(AssetPair(ProductAmount(10, util.urn_dum1), ProductAmount(10, util.urn_dum2)), 3600)
         self.should_check_equality = False
         json_response = await self.do_request('bids', expected_code=200)
         self.assertIn('bids', json_response)
@@ -110,8 +112,8 @@ class TestMarketEndpoint(TestRestApiBase):
         post_data = {
             'first_asset_amount': 10,
             'second_asset_amount': 10,
-            'first_asset_type': 'DUM1',
-            'second_asset_type': 'DUM2',
+            'first_asset_type': util.urn_dum1,
+            'second_asset_type': util.urn_dum2,
             'timeout': 3400
         }
         await self.do_request('bids', expected_code=200, request_type='PUT', post_data=post_data)
@@ -123,7 +125,7 @@ class TestMarketEndpoint(TestRestApiBase):
         Test for an error when we don't add an asset amount when creating a bid
         """
         self.should_check_equality = False
-        post_data = {'first_asset_amount': 10, 'first_asset_type': 'DUM1', 'second_asset_type': 'DUM2', 'timeout': 3400}
+        post_data = {'first_asset_amount': 10, 'first_asset_type': util.urn_dum1, 'second_asset_type': util.urn_dum2, 'timeout': 3400}
         await self.do_request('bids', expected_code=400, request_type='PUT', post_data=post_data)
 
     @timeout(10)
@@ -132,7 +134,7 @@ class TestMarketEndpoint(TestRestApiBase):
         Test for an error when we don't add an asset type when creating a bid
         """
         self.should_check_equality = False
-        post_data = {'first_asset_amount': 10, 'second_asset_amount': 10, 'second_asset_type': 'DUM2', 'timeout': 3400}
+        post_data = {'first_asset_amount': 10, 'second_asset_amount': 10, 'second_asset_type': util.urn_dum2, 'timeout': 3400}
         await self.do_request('bids', expected_code=400, request_type='PUT', post_data=post_data)
 
     @timeout(10)
@@ -161,7 +163,7 @@ class TestMarketEndpoint(TestRestApiBase):
         """
 
         self.nodes[0].overlay.order_manager.create_ask_order(
-            AssetPair(AssetAmount(3, 'DUM1'), AssetAmount(4, 'DUM2')), Timeout(3600))
+            AssetPair(ProductAmount(3, util.urn_dum1), ProductAmount(4, util.urn_dum2)), Timeout(3600))
 
         self.should_check_equality = False
         json_response = await self.do_request('orders', expected_code=200)
@@ -186,7 +188,7 @@ class TestMarketEndpoint(TestRestApiBase):
         Test whether a 404 is returned when we try to cancel an order that does not exist
         """
         self.nodes[0].overlay.order_manager.create_ask_order(
-            AssetPair(AssetAmount(3, 'DUM1'), AssetAmount(4, 'DUM2')), Timeout(3600))
+            AssetPair(ProductAmount(3, util.urn_dum1), ProductAmount(4, util.urn_dum2)), Timeout(3600))
         self.should_check_equality = False
         await self.do_request('orders/1234/cancel', request_type='POST', expected_code=404)
 
@@ -196,7 +198,7 @@ class TestMarketEndpoint(TestRestApiBase):
         Test whether an error is returned when we try to cancel an order that has expired
         """
         order = self.nodes[0].overlay.order_manager.create_ask_order(
-            AssetPair(AssetAmount(3, 'DUM1'), AssetAmount(4, 'DUM2')), Timeout(0))
+            AssetPair(ProductAmount(3, util.urn_dum1), ProductAmount(4, util.urn_dum2)), Timeout(0))
         order.set_verified()
         self.nodes[0].overlay.order_manager.order_repository.update(order)
         self.should_check_equality = False
@@ -208,7 +210,7 @@ class TestMarketEndpoint(TestRestApiBase):
         Test whether an error is returned when we try to cancel an order that has expired
         """
         order = self.nodes[0].overlay.order_manager.create_ask_order(
-            AssetPair(AssetAmount(3, 'DUM1'), AssetAmount(4, 'DUM2')), Timeout(3600))
+            AssetPair(ProductAmount(3, util.urn_dum1), ProductAmount(4, util.urn_dum2)), Timeout(3600))
 
         self.should_check_equality = False
         json_response = await self.do_request('orders/1/cancel', request_type='POST', expected_code=200)

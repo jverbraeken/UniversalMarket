@@ -1,11 +1,12 @@
 import unittest
 
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.message import TraderId
 from anydex.core.payment import Payment
 from anydex.core.payment_id import PaymentId
 from anydex.core.timestamp import Timestamp
 from anydex.core.transaction import TransactionId
+from anydex.test import util
 from anydex.core.wallet_address import WalletAddress
 
 
@@ -16,7 +17,7 @@ class PaymentTestSuite(unittest.TestCase):
         # Object creation
         self.payment = Payment(TraderId(b'0' * 20),
                                TransactionId(b'a' * 32),
-                               AssetAmount(3, 'BTC'),
+                               ProductAmount(3, util.urn_btc),
                                WalletAddress('a'), WalletAddress('b'),
                                PaymentId('aaa'), Timestamp(4000))
 
@@ -29,7 +30,7 @@ class PaymentTestSuite(unittest.TestCase):
             "transaction_id": "61" * 32,
             "transferred": {
                 "amount": 3,
-                "type": "BTC"
+                "type": str(util.urn_btc)
             },
             "payment_id": 'aaa',
             "address_from": 'a',

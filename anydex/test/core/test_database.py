@@ -1,6 +1,6 @@
 import os
 
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.assetpair import AssetPair
 from anydex.core.database import LATEST_DB_VERSION, MarketDB
 from anydex.core.message import TraderId
@@ -11,6 +11,7 @@ from anydex.core.tick import Tick
 from anydex.core.timeout import Timeout
 from anydex.core.timestamp import Timestamp
 from anydex.core.transaction import Transaction, TransactionId
+from anydex.test import util
 from anydex.core.wallet_address import WalletAddress
 from anydex.test.base import AbstractServer
 
@@ -28,18 +29,18 @@ class TestDatabase(AbstractServer):
 
         self.order_id1 = OrderId(TraderId(b'3' * 20), OrderNumber(4))
         self.order_id2 = OrderId(TraderId(b'4' * 20), OrderNumber(5))
-        self.order1 = Order(self.order_id1, AssetPair(AssetAmount(5, 'BTC'), AssetAmount(6, 'EUR')),
+        self.order1 = Order(self.order_id1, AssetPair(ProductAmount(5, util.urn_btc), ProductAmount(6, util.urn_eur)),
                             Timeout(3600), Timestamp.now(), True)
-        self.order2 = Order(self.order_id2, AssetPair(AssetAmount(5, 'BTC'), AssetAmount(6, 'EUR')),
+        self.order2 = Order(self.order_id2, AssetPair(ProductAmount(5, util.urn_btc), ProductAmount(6, util.urn_eur)),
                             Timeout(3600), Timestamp.now(), False)
         self.order2.reserve_quantity_for_tick(OrderId(TraderId(b'3' * 20), OrderNumber(4)), 3)
 
         self.transaction_id1 = TransactionId(b'a' * 32)
-        self.transaction1 = Transaction(self.transaction_id1, AssetPair(AssetAmount(100, 'BTC'), AssetAmount(30, 'MB')),
+        self.transaction1 = Transaction(self.transaction_id1, AssetPair(ProductAmount(100, util.urn_btc), ProductAmount(30, util.urn_mb)),
                                         OrderId(TraderId(b'0' * 20), OrderNumber(1)),
                                         OrderId(TraderId(b'1' * 20), OrderNumber(2)), Timestamp(20000))
 
-        self.payment1 = Payment(TraderId(b'0' * 20), self.transaction_id1, AssetAmount(5, 'BTC'),
+        self.payment1 = Payment(TraderId(b'0' * 20), self.transaction_id1, ProductAmount(5, util.urn_btc),
                                 WalletAddress('abc'), WalletAddress('def'), PaymentId("abc"), Timestamp(20000))
 
         self.transaction1.add_payment(self.payment1)
@@ -59,8 +60,8 @@ class TestDatabase(AbstractServer):
 
         # Verify that the assets are correctly decoded
         assets = orders[0].assets
-        self.assertEqual(assets.first.asset_id, "BTC")
-        self.assertEqual(assets.second.asset_id, "EUR")
+        self.assertEqual(assets.first.urn, util.urn_btc)
+        self.assertEqual(assets.second.urn, util.urn_eur)
 
     def test_get_specific_order(self):
         """
@@ -108,8 +109,8 @@ class TestDatabase(AbstractServer):
 
         # Verify that the assets are correctly decoded
         assets = transactions[0].assets
-        self.assertEqual(assets.first.asset_id, "BTC")
-        self.assertEqual(assets.second.asset_id, "MB")
+        self.assertEqual(assets.first.urn, util.urn_btc)
+        self.assertEqual(assets.second.urn, util.urn_mb)
 
     def test_insert_or_update_transaction(self):
         """
@@ -163,7 +164,7 @@ class TestDatabase(AbstractServer):
         self.assertEqual(len(payments), 1)
 
         # Verify that the assets are correctly decoded
-        self.assertEqual(payments[0].transferred_assets.asset_id, "BTC")
+        self.assertEqual(payments[0].transferred_assets.urn, util.urn_btc)
 
     def test_add_remove_tick(self):
         """

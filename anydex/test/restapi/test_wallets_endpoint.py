@@ -1,3 +1,4 @@
+from anydex.test import util
 from ipv8.util import fail, succeed
 
 from sqlalchemy.orm import session as db_session
@@ -48,7 +49,7 @@ class TestWalletsEndpoint(TestRestApiBase):
         """
         Test creating a BTC wallet
         """
-        self.nodes[0].overlay.wallets['BTC'].create_wallet = lambda: succeed(None)
+        self.nodes[0].overlay.wallets[util.urn_btc].create_wallet = lambda: succeed(None)
         self.should_check_equality = False
         await self.do_request('wallets/BTC', expected_code=200, request_type='PUT')
 
@@ -69,7 +70,7 @@ class TestWalletsEndpoint(TestRestApiBase):
         self.should_check_equality = False
 
         await self.do_request('wallets/BTC', expected_code=200, request_type='PUT')
-        self.nodes[0].overlay.wallets['BTC'].created = False
+        self.nodes[0].overlay.wallets[util.urn_btc].created = False
         await self.do_request('wallets/BTC', expected_code=500, request_type='PUT')
 
     @timeout(20)
@@ -112,7 +113,7 @@ class TestWalletsEndpoint(TestRestApiBase):
         """
         Test transferring assets when providing wrong parameters
         """
-        self.nodes[0].overlay.wallets['BTC'].created = True
+        self.nodes[0].overlay.wallets[util.urn_btc].created = True
         self.should_check_equality = False
         await self.do_request('wallets/BTC/transfer', expected_code=400, request_type='POST')
 
@@ -121,8 +122,8 @@ class TestWalletsEndpoint(TestRestApiBase):
         """
         Test whether we receive the right response when we try a transfer that errors
         """
-        self.nodes[0].overlay.wallets['BTC'].transfer = lambda *_: fail(RuntimeError("error"))
-        self.nodes[0].overlay.wallets['BTC'].created = True
+        self.nodes[0].overlay.wallets[util.urn_btc].transfer = lambda *_: fail(RuntimeError("error"))
+        self.nodes[0].overlay.wallets[util.urn_btc].created = True
         self.should_check_equality = False
         post_data = {'amount': 3, 'destination': 'abc'}
         await self.do_request('wallets/BTC/transfer', expected_code=500, request_type='POST', post_data=post_data)
@@ -132,8 +133,8 @@ class TestWalletsEndpoint(TestRestApiBase):
         """
         Test transferring assets
         """
-        self.nodes[0].overlay.wallets['BTC'].created = True
-        self.nodes[0].overlay.wallets['BTC'].transfer = lambda *_: succeed('abcd')
+        self.nodes[0].overlay.wallets[util.urn_btc].created = True
+        self.nodes[0].overlay.wallets[util.urn_btc].transfer = lambda *_: succeed('abcd')
         self.should_check_equality = False
         post_data = {'amount': 3, 'destination': 'abc'}
         await self.do_request('wallets/BTC/transfer', expected_code=200, request_type='POST', post_data=post_data)

@@ -1,13 +1,14 @@
 import unittest
 from binascii import hexlify
 
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.assetpair import AssetPair
 from anydex.core.message import TraderId
 from anydex.core.order import Order, OrderId, OrderNumber
 from anydex.core.tick import Ask, Bid, Tick
 from anydex.core.timeout import Timeout
 from anydex.core.timestamp import Timestamp
+from anydex.test import util
 
 
 class TickTestSuite(unittest.TestCase):
@@ -19,14 +20,14 @@ class TickTestSuite(unittest.TestCase):
         # Object creation
         self.timestamp_now = Timestamp.now()
         self.tick = Tick(OrderId(TraderId(b'0' * 20), OrderNumber(1)),
-                         AssetPair(AssetAmount(30, 'BTC'), AssetAmount(30, 'MB')), Timeout(30), Timestamp(0), True)
+                         AssetPair(ProductAmount(30, util.urn_btc), ProductAmount(30, util.urn_mb)), Timeout(30), Timestamp(0), True)
         self.tick2 = Tick(OrderId(TraderId(b'0' * 20), OrderNumber(2)),
-                          AssetPair(AssetAmount(30, 'BTC'), AssetAmount(30, 'MB')), Timeout(0), Timestamp(0), False)
+                          AssetPair(ProductAmount(30, util.urn_btc), ProductAmount(30, util.urn_mb)), Timeout(0), Timestamp(0), False)
         self.order_ask = Order(OrderId(TraderId(b'0' * 20), OrderNumber(2)),
-                               AssetPair(AssetAmount(30, 'BTC'), AssetAmount(30, 'MB')),
+                               AssetPair(ProductAmount(30, util.urn_btc), ProductAmount(30, util.urn_mb)),
                                Timeout(0), Timestamp(0), True)
         self.order_bid = Order(OrderId(TraderId(b'0' * 20), OrderNumber(2)),
-                               AssetPair(AssetAmount(30, 'BTC'), AssetAmount(30, 'MB')),
+                               AssetPair(ProductAmount(30, util.urn_btc), ProductAmount(30, util.urn_mb)),
                                Timeout(0), Timestamp(0), False)
 
     def test_is_ask(self):
@@ -37,8 +38,8 @@ class TickTestSuite(unittest.TestCase):
     def test_to_network(self):
         # Test for to network
         self.assertEqual((TraderId(b'0' * 20), self.tick.timestamp, OrderNumber(1),
-                           AssetPair(AssetAmount(30, 'BTC'), AssetAmount(30, 'MB')), self.tick.timeout, 0),
-                          self.tick.to_network())
+                          AssetPair(ProductAmount(30, util.urn_btc), ProductAmount(30, util.urn_mb)), self.tick.timeout, 0),
+                         self.tick.to_network())
 
     def test_traded_setter(self):
         # Test for traded setter

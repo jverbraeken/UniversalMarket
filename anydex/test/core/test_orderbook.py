@@ -1,4 +1,4 @@
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.assetpair import AssetPair
 from anydex.core.message import TraderId
 from anydex.core.order import OrderId, OrderNumber
@@ -8,8 +8,8 @@ from anydex.core.tick import Ask, Bid
 from anydex.core.timeout import Timeout
 from anydex.core.timestamp import Timestamp
 from anydex.core.trade import Trade
+from anydex.test import util
 from anydex.test.base import AbstractServer
-from anydex.test.util import timeout
 
 
 class AbstractTestOrderBook(AbstractServer):
@@ -21,21 +21,21 @@ class AbstractTestOrderBook(AbstractServer):
         super(AbstractTestOrderBook, self).setUp()
         # Object creation
         self.ask = Ask(OrderId(TraderId(b'0' * 20), OrderNumber(1)),
-                       AssetPair(AssetAmount(100, 'BTC'), AssetAmount(30, 'MB')), Timeout(100), Timestamp.now())
+                       AssetPair(ProductAmount(100, util.urn_btc), ProductAmount(30, util.urn_mb)), Timeout(100), Timestamp.now())
         self.invalid_ask = Ask(OrderId(TraderId(b'0' * 20), OrderNumber(1)),
-                               AssetPair(AssetAmount(100, 'BTC'), AssetAmount(30, 'MB')), Timeout(0), Timestamp(0))
+                               AssetPair(ProductAmount(100, util.urn_btc), ProductAmount(30, util.urn_mb)), Timeout(0), Timestamp(0))
         self.ask2 = Ask(OrderId(TraderId(b'1' * 20), OrderNumber(1)),
-                        AssetPair(AssetAmount(400, 'BTC'), AssetAmount(30, 'MB')), Timeout(100), Timestamp.now())
+                        AssetPair(ProductAmount(400, util.urn_btc), ProductAmount(30, util.urn_mb)), Timeout(100), Timestamp.now())
         self.bid = Bid(OrderId(TraderId(b'2' * 20), OrderNumber(1)),
-                       AssetPair(AssetAmount(200, 'BTC'), AssetAmount(30, 'MB')), Timeout(100), Timestamp.now())
+                       AssetPair(ProductAmount(200, util.urn_btc), ProductAmount(30, util.urn_mb)), Timeout(100), Timestamp.now())
         self.invalid_bid = Bid(OrderId(TraderId(b'0' * 20), OrderNumber(1)),
-                               AssetPair(AssetAmount(100, 'BTC'), AssetAmount(30, 'MB')), Timeout(0), Timestamp(0))
+                               AssetPair(ProductAmount(100, util.urn_btc), ProductAmount(30, util.urn_mb)), Timeout(0), Timestamp(0))
         self.bid2 = Bid(OrderId(TraderId(b'3' * 20), OrderNumber(1)),
-                        AssetPair(AssetAmount(300, 'BTC'), AssetAmount(30, 'MB')), Timeout(100), Timestamp.now())
+                        AssetPair(ProductAmount(300, util.urn_btc), ProductAmount(30, util.urn_mb)), Timeout(100), Timestamp.now())
         self.trade = Trade.propose(TraderId(b'0' * 20),
                                    OrderId(TraderId(b'0' * 20), OrderNumber(1)),
                                    OrderId(TraderId(b'0' * 20), OrderNumber(1)),
-                                   AssetPair(AssetAmount(100, 'BTC'), AssetAmount(30, 'MB')),
+                                   AssetPair(ProductAmount(100, util.urn_btc), ProductAmount(30, util.urn_mb)),
                                    Timestamp(1462224447117))
         self.order_book = OrderBook()
 
@@ -102,34 +102,34 @@ class TestOrderBook(AbstractTestOrderBook):
         # Test for properties
         self.order_book.insert_ask(self.ask2)
         self.order_book.insert_bid(self.bid2)
-        self.assertEqual(Price(-25, 1000, 'MB', 'BTC'), self.order_book.get_bid_ask_spread('MB', 'BTC'))
+        self.assertEqual(Price(-25, 1000, util.urn_mb, util.urn_btc), self.order_book.get_bid_ask_spread(util.urn_mb, util.urn_btc))
 
     def test_ask_price_level(self):
         self.order_book.insert_ask(self.ask)
-        price_level = self.order_book.get_ask_price_level('MB', 'BTC')
+        price_level = self.order_book.get_ask_price_level(util.urn_mb, util.urn_btc)
         self.assertEqual(price_level.depth, 100)
 
     def test_bid_price_level(self):
         # Test for tick price
         self.order_book.insert_bid(self.bid2)
-        price_level = self.order_book.get_bid_price_level('MB', 'BTC')
+        price_level = self.order_book.get_bid_price_level(util.urn_mb, util.urn_btc)
         self.assertEqual(price_level.depth, 300)
 
     def test_ask_side_depth(self):
         # Test for ask side depth
         self.order_book.insert_ask(self.ask)
         self.order_book.insert_ask(self.ask2)
-        self.assertEqual(100, self.order_book.ask_side_depth(Price(3, 10, 'MB', 'BTC')))
-        self.assertEqual([(Price(75, 1000, 'MB', 'BTC'), 400), (Price(3, 10, 'MB', 'BTC'), 100)],
-                          self.order_book.get_ask_side_depth_profile('MB', 'BTC'))
+        self.assertEqual(100, self.order_book.ask_side_depth(Price(3, 10, util.urn_mb, util.urn_btc)))
+        self.assertEqual([(Price(75, 1000, util.urn_mb, util.urn_btc), 400), (Price(3, 10, util.urn_mb, util.urn_btc), 100)],
+                         self.order_book.get_ask_side_depth_profile(util.urn_mb, util.urn_btc))
 
     def test_bid_side_depth(self):
         # Test for bid side depth
         self.order_book.insert_bid(self.bid)
         self.order_book.insert_bid(self.bid2)
-        self.assertEqual(300, self.order_book.bid_side_depth(Price(1, 10, 'MB', 'BTC')))
-        self.assertEqual([(Price(1, 10, 'MB', 'BTC'), 300), (Price(15, 100, 'MB', 'BTC'), 200)],
-                          self.order_book.get_bid_side_depth_profile('MB', 'BTC'))
+        self.assertEqual(300, self.order_book.bid_side_depth(Price(1, 10, util.urn_mb, util.urn_btc)))
+        self.assertEqual([(Price(1, 10, util.urn_mb, util.urn_btc), 300), (Price(15, 100, util.urn_mb, util.urn_btc), 200)],
+                         self.order_book.get_bid_side_depth_profile(util.urn_mb, util.urn_btc))
 
     def test_remove_tick(self):
         # Test for tick removal
@@ -186,6 +186,6 @@ class TestOrderBook(AbstractTestOrderBook):
         self.order_book.insert_bid(self.bid)
 
         self.assertEqual('------ Bids -------\n'
-                          '200 BTC\t@\t0.15 MB\n\n'
+                          '200 %s\t@\t0.15 %s\n\n'
                           '------ Asks -------\n'
-                          '100 BTC\t@\t0.3 MB\n\n', str(self.order_book))
+                          '100 %s\t@\t0.3 %s\n\n' % (util.urn_btc, util.urn_mb, util.urn_btc, util.urn_mb), str(self.order_book))

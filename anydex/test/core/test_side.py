@@ -1,6 +1,6 @@
 import unittest
 
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.assetpair import AssetPair
 from anydex.core.message import TraderId
 from anydex.core.order import OrderId, OrderNumber
@@ -9,6 +9,7 @@ from anydex.core.side import Side
 from anydex.core.tick import Tick
 from anydex.core.timeout import Timeout
 from anydex.core.timestamp import Timestamp
+from anydex.test import util
 
 
 class SideTestSuite(unittest.TestCase):
@@ -18,32 +19,32 @@ class SideTestSuite(unittest.TestCase):
         # Object creation
 
         self.tick = Tick(OrderId(TraderId(b'0' * 20), OrderNumber(1)),
-                         AssetPair(AssetAmount(60, 'BTC'), AssetAmount(30, 'MB')),
+                         AssetPair(ProductAmount(60, util.urn_btc), ProductAmount(30, util.urn_mb)),
                          Timeout(100), Timestamp.now(), True)
         self.tick2 = Tick(OrderId(TraderId(b'1' * 20), OrderNumber(2)),
-                          AssetPair(AssetAmount(120, 'BTC'), AssetAmount(30, 'MB')),
+                          AssetPair(ProductAmount(120, util.urn_btc), ProductAmount(30, util.urn_mb)),
                           Timeout(100), Timestamp.now(), True)
         self.side = Side()
 
     def test_max_price(self):
         # Test max price (list)
-        self.assertEqual(None, self.side.get_max_price('MB', 'BTC'))
-        self.assertEqual(None, self.side.get_max_price_list('MB', 'BTC'))
+        self.assertEqual(None, self.side.get_max_price(util.urn_mb, util.urn_btc))
+        self.assertEqual(None, self.side.get_max_price_list(util.urn_mb, util.urn_btc))
 
         self.side.insert_tick(self.tick)
         self.side.insert_tick(self.tick2)
 
-        self.assertEqual(Price(1, 2, 'MB', 'BTC'), self.side.get_max_price('MB', 'BTC'))
+        self.assertEqual(Price(1, 2, util.urn_mb, util.urn_btc), self.side.get_max_price(util.urn_mb, util.urn_btc))
 
     def test_min_price(self):
         # Test min price (list)
-        self.assertEqual(None, self.side.get_min_price_list('MB', 'BTC'))
-        self.assertEqual(None, self.side.get_min_price('MB', 'BTC'))
+        self.assertEqual(None, self.side.get_min_price_list(util.urn_mb, util.urn_btc))
+        self.assertEqual(None, self.side.get_min_price(util.urn_mb, util.urn_btc))
 
         self.side.insert_tick(self.tick)
         self.side.insert_tick(self.tick2)
 
-        self.assertEqual(Price(1, 4, 'MB', 'BTC'), self.side.get_min_price('MB', 'BTC'))
+        self.assertEqual(Price(1, 4, util.urn_mb, util.urn_btc), self.side.get_min_price(util.urn_mb, util.urn_btc))
 
     def test_insert_tick(self):
         # Test insert tick

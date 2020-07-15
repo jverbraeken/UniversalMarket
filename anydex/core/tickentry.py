@@ -142,4 +142,4 @@ class TickEntry(TaskManager):
         :rtype: str
         """
         return "%s\t@\t%g %s" % (self._tick.assets.first, self._tick.price.amount,
-                                         self._tick.assets.second.asset_id)
+                                         self._tick.assets.second.urn)

@@ -1,6 +1,7 @@
+from anydex.core.urn import URN
 from ipv8.messaging.payload import Payload
 
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.assetpair import AssetPair
 from anydex.core.bloomfilter import BloomFilter
 from anydex.core.message import TraderId
@@ -69,9 +70,9 @@ class OrderPayload(MessagePayload):
         data = super(OrderPayload, self).to_pack_list()
         data += [('I', int(self.order_number)),
                  ('Q', self.assets.first.amount),
-                 ('varlenI', self.assets.first.asset_id.encode('utf-8')),
+                 ('varlenI', str(self.assets.first.urn).encode('utf-8')),
                  ('Q', self.assets.second.amount),
-                 ('varlenI', self.assets.second.asset_id.encode('utf-8')),
+                 ('varlenI', str(self.assets.second.urn).encode('utf-8')),
                  ('I', int(self.timeout)),
                  ('Q', self.traded)]
         return data
@@ -102,8 +103,8 @@ class MatchPayload(OrderPayload):
     def from_unpack_list(cls, trader_id, timestamp, order_number, asset1_amount, asset1_type, asset2_amount,
                          asset2_type, timeout, traded, recipient_order_number, match_trader_id, matchmaker_trader_id):
         return MatchPayload(TraderId(trader_id), Timestamp(timestamp), OrderNumber(order_number),
-                            AssetPair(AssetAmount(asset1_amount, asset1_type.decode('utf-8')),
-                                      AssetAmount(asset2_amount, asset2_type.decode('utf-8'))),
+                            AssetPair(ProductAmount(asset1_amount, URN(asset1_type.decode('utf-8'))),
+                                      ProductAmount(asset2_amount, URN(asset2_type.decode('utf-8')))),
                             Timeout(timeout), traded, OrderNumber(recipient_order_number),
                             TraderId(match_trader_id), TraderId(matchmaker_trader_id))
 
@@ -156,9 +157,9 @@ class TradePayload(MessagePayload):
                  ('I', int(self.recipient_order_id.order_number)),
                  ('I', self.proposal_id),
                  ('Q', self.assets.first.amount),
-                 ('varlenI', self.assets.first.asset_id.encode('utf-8')),
+                 ('varlenI', str(self.assets.first.urn).encode('utf-8')),
                  ('Q', self.assets.second.amount),
-                 ('varlenI', self.assets.second.asset_id.encode('utf-8'))]
+                 ('varlenI', str(self.assets.second.urn).encode('utf-8'))]
         return data
 
     @classmethod
@@ -166,8 +167,8 @@ class TradePayload(MessagePayload):
                          proposal_id, asset1_amount, asset1_type, asset2_amount, asset2_type):
         return TradePayload(TraderId(trader_id), Timestamp(timestamp), OrderNumber(order_number),
                             OrderId(TraderId(recipient_trader_id), OrderNumber(recipient_order_number)), proposal_id,
-                            AssetPair(AssetAmount(asset1_amount, asset1_type.decode('utf-8')),
-                                      AssetAmount(asset2_amount, asset2_type.decode('utf-8'))))
+                            AssetPair(ProductAmount(asset1_amount, URN(asset1_type.decode('utf-8'))),
+                                      ProductAmount(asset2_amount, URN(asset2_type.decode('utf-8')))))
 
 
 class DeclineTradePayload(MessagePayload):
@@ -287,8 +288,8 @@ class OrderStatusResponsePayload(OrderPayload):
     def from_unpack_list(cls, trader_id, timestamp, order_number, asset1_amount, asset1_type, asset2_amount,
                          asset2_type, timeout, traded, identifier):
         return OrderStatusResponsePayload(TraderId(trader_id), Timestamp(timestamp), OrderNumber(order_number),
-                                          AssetPair(AssetAmount(asset1_amount, asset1_type.decode('utf-8')),
-                                                    AssetAmount(asset2_amount, asset2_type.decode('utf-8'))),
+                                          AssetPair(ProductAmount(asset1_amount, URN(asset1_type.decode('utf-8'))),
+                                                    ProductAmount(asset2_amount, URN(asset2_type.decode('utf-8')))),
                                           Timeout(timeout), traded, identifier)
 
 

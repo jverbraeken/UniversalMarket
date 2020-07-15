@@ -3,6 +3,7 @@ from urllib.parse import quote_plus
 
 from aiohttp import ClientSession
 
+from anydex.test import util
 from ipv8.test.base import TestBase
 from ipv8.test.mocking.ipv8 import MockIPv8
 
@@ -60,7 +61,7 @@ class TestRestApiBase(TestBase):
         dum1_wallet.MONITOR_DELAY = 0
         dum2_wallet.MONITOR_DELAY = 0
 
-        wallets = {'DUM1': dum1_wallet, 'DUM2': dum2_wallet}
+        wallets = {util.urn_dum1: dum1_wallet, util.urn_dum2: dum2_wallet}
 
         mock_ipv8 = MockIPv8(u"curve25519", MarketCommunity, create_trustchain=True, create_dht=True,
                              is_matchmaker=True, wallets=wallets, use_database=False, working_directory=u":memory:")

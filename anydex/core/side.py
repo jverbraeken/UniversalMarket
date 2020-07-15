@@ -81,9 +81,9 @@ class Side(object):
         :param tick: The tick to insert
         :type tick: Tick
         """
-        if (tick.assets.second.asset_id, tick.assets.first.asset_id) not in self._price_level_list_map:
-            self._price_level_list_map[(tick.assets.second.asset_id, tick.assets.first.asset_id)] = PriceLevelList()
-            self._depth[(tick.assets.second.asset_id, tick.assets.first.asset_id)] = 0
+        if (tick.assets.second.urn, tick.assets.first.urn) not in self._price_level_list_map:
+            self._price_level_list_map[(tick.assets.second.urn, tick.assets.first.urn)] = PriceLevelList()
+            self._depth[(tick.assets.second.urn, tick.assets.first.urn)] = 0
 
         if not self._price_level_exists(tick.price):  # First tick for that price
             self._create_price_level(tick.price)

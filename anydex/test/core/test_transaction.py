@@ -1,6 +1,6 @@
 import unittest
 
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.assetpair import AssetPair
 from anydex.core.message import TraderId
 from anydex.core.order import OrderId, OrderNumber
@@ -10,27 +10,28 @@ from anydex.core.timestamp import Timestamp
 from anydex.core.trade import Trade
 from anydex.core.transaction import Transaction, TransactionId
 from anydex.core.wallet_address import WalletAddress
+from anydex.test import util
 
 
 class TransactionTestSuite(unittest.TestCase):
     """Transaction test cases."""
-
+    
     def setUp(self):
         # Object creation
         self.maxDiff = None
         self.transaction_id = TransactionId(b'a' * 32)
-        self.transaction = Transaction(self.transaction_id, AssetPair(AssetAmount(100, 'BTC'), AssetAmount(100, 'MB')),
+        self.transaction = Transaction(self.transaction_id, AssetPair(ProductAmount(100, util.urn_btc), ProductAmount(100, util.urn_mb)),
                                        OrderId(TraderId(b'3' * 20), OrderNumber(2)),
                                        OrderId(TraderId(b'2' * 20), OrderNumber(1)), Timestamp(0))
         self.proposed_trade = Trade.propose(TraderId(b'0' * 20),
                                             OrderId(TraderId(b'0' * 20), OrderNumber(2)),
                                             OrderId(TraderId(b'1' * 20), OrderNumber(3)),
-                                            AssetPair(AssetAmount(100, 'BTC'), AssetAmount(100, 'MB')), Timestamp(0))
+                                            AssetPair(ProductAmount(100, util.urn_btc), ProductAmount(100, util.urn_mb)), Timestamp(0))
         self.payment = Payment(TraderId(b'0' * 20), TransactionId(b'a' * 32),
-                               AssetAmount(100, 'MB'), WalletAddress('a'), WalletAddress('b'),
+                               ProductAmount(100, util.urn_mb), WalletAddress('a'), WalletAddress('b'),
                                PaymentId('aaa'), Timestamp(4))
         self.payment2 = Payment(TraderId(b'0' * 20), TransactionId(b'a' * 32),
-                                AssetAmount(100, 'BTC'), WalletAddress('a'), WalletAddress('b'),
+                                ProductAmount(100, util.urn_btc), WalletAddress('a'), WalletAddress('b'),
                                 PaymentId('aaa'), Timestamp(4))
 
     def test_add_payment(self):
@@ -46,8 +47,8 @@ class TransactionTestSuite(unittest.TestCase):
         """
         Test the process of determining the next payment details during a transaction
         """
-        self.assertEqual(self.transaction.next_payment(True), AssetAmount(100, 'BTC'))
-        self.assertEqual(self.transaction.next_payment(False), AssetAmount(100, 'MB'))
+        self.assertEqual(self.transaction.next_payment(True), ProductAmount(100, util.urn_btc))
+        self.assertEqual(self.transaction.next_payment(False), ProductAmount(100, util.urn_mb))
 
     def test_is_payment_complete(self):
         """
@@ -56,7 +57,7 @@ class TransactionTestSuite(unittest.TestCase):
         self.assertFalse(self.transaction.is_payment_complete())
         self.transaction.add_payment(self.payment)
         self.assertFalse(self.transaction.is_payment_complete())
-        self.transaction._transferred_assets = AssetPair(AssetAmount(100, 'BTC'), AssetAmount(100, 'MB'))
+        self.transaction._transferred_assets = AssetPair(ProductAmount(100, util.urn_btc), ProductAmount(100, util.urn_mb))
         self.assertTrue(self.transaction.is_payment_complete())
 
     def test_to_dictionary(self):
@@ -72,21 +73,21 @@ class TransactionTestSuite(unittest.TestCase):
             'assets': {
                 'first': {
                     'amount': 100,
-                    'type': 'BTC',
+                    'type': str(util.urn_btc),
                 },
                 'second': {
                     'amount': 100,
-                    'type': 'MB'
+                    'type': str(util.urn_mb)
                 }
             },
             'transferred': {
                 'first': {
                     'amount': 0,
-                    'type': 'BTC',
+                    'type': str(util.urn_btc),
                 },
                 'second': {
                     'amount': 0,
-                    'type': 'MB'
+                    'type': str(util.urn_mb)
                 }
             },
             'timestamp': 0,

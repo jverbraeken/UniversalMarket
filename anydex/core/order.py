@@ -1,8 +1,9 @@
 import logging
 
+from anydex.core.urn import URN
 from ipv8.database import database_blob
 
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.assetpair import AssetPair
 from anydex.core.message import TraderId
 from anydex.core.timeout import Timeout
@@ -123,8 +124,8 @@ class Order(object):
          received_quantity, timeout, order_timestamp, completed_timestamp, is_ask, cancelled, verified) = data
 
         order_id = OrderId(TraderId(bytes(trader_id)), OrderNumber(order_number))
-        order = cls(order_id, AssetPair(AssetAmount(asset1_amount, asset1_type.decode()),
-                                        AssetAmount(asset2_amount, asset2_type.decode())),
+        order = cls(order_id, AssetPair(ProductAmount(asset1_amount, URN(asset1_type.decode())),
+                                        ProductAmount(asset2_amount, URN(asset2_type.decode()))),
                     Timeout(timeout), Timestamp(order_timestamp), bool(is_ask))
         order._traded_quantity = traded_quantity
         order._received_quantity = received_quantity
@@ -146,8 +147,8 @@ class Order(object):
         """
         completed_timestamp = int(self.completed_timestamp) if self.completed_timestamp else None
         return (database_blob(bytes(self.order_id.trader_id)), str(self.order_id.order_number),
-                self.assets.first.amount, self.assets.first.asset_id, self.assets.second.amount,
-                self.assets.second.asset_id, self.traded_quantity, self._received_quantity,
+                self.assets.first.amount, str(self.assets.first.urn), self.assets.second.amount,
+                str(self.assets.second.urn), self.traded_quantity, self._received_quantity,
                 int(self.timeout), int(self.timestamp), completed_timestamp, self.is_ask(), self._cancelled,
                 self._verified)
 
@@ -362,7 +363,7 @@ class Order(object):
         self._logger.debug("Adding trade for order %s with quantity %s (other id: %s)",
                            str(self.order_id), transferred_assets, str(other_order_id))
 
-        if transferred_assets.asset_id == self.assets.first.asset_id:
+        if transferred_assets.urn == self.assets.first.urn:
             self._traded_quantity += transferred_assets.amount
             self.release_quantity_for_tick(other_order_id, transferred_assets.amount)
         else:

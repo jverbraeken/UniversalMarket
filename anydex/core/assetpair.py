@@ -1,7 +1,8 @@
 # pylint: disable=long-builtin,redefined-builtin
 
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.price import Price
+from anydex.core.urn import URN
 
 try:
     long
@@ -16,9 +17,6 @@ class AssetPair(object):
     """
 
     def __init__(self, first, second):
-        if first.asset_id > second.asset_id:
-            raise ValueError("Asset %s must be smaller than %s" % (first, second))
-
         self.first = first
         self.second = second
 
@@ -36,15 +34,15 @@ class AssetPair(object):
 
     @classmethod
     def from_dictionary(cls, dictionary):
-        return cls(AssetAmount(dictionary["first"]["amount"], dictionary["first"]["type"]),
-                   AssetAmount(dictionary["second"]["amount"], dictionary["second"]["type"]))
+        return cls(ProductAmount(dictionary["first"]["amount"], URN(dictionary["first"]["type"])),
+                   ProductAmount(dictionary["second"]["amount"], URN(dictionary["second"]["type"])))
 
     @property
     def price(self):
         """
         Return a Price object of this asset pair, which expresses the second asset into the first asset.
         """
-        return Price(self.second.amount, self.first.amount, self.second.asset_id, self.first.asset_id)
+        return Price(self.second.amount, self.first.amount, self.second.urn, self.first.urn)
 
     def proportional_downscale(self, first=None, second=None):
         """
@@ -55,11 +53,11 @@ class AssetPair(object):
         Likewise, if the second asset is changed to 4, the new AssetPair becomes (2 BTC, 4 MB)
         """
         if first:
-            return AssetPair(AssetAmount(first, self.first.asset_id),
-                             AssetAmount(long(self.price.amount * first), self.second.asset_id))
+            return AssetPair(ProductAmount(first, self.first.urn),
+                             ProductAmount(long(self.price.amount * first), self.second.urn))
         elif second:
-            return AssetPair(AssetAmount(long(second / self.price.amount), self.first.asset_id),
-                             AssetAmount(second, self.second.asset_id))
+            return AssetPair(ProductAmount(long(second / self.price.amount), self.first.urn),
+                             ProductAmount(second, self.second.urn))
         else:
             raise ValueError("No first/second provided in proportional downscale!")
 

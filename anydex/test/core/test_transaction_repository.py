@@ -1,12 +1,13 @@
 import unittest
 
-from anydex.core.assetamount import AssetAmount
+from anydex.core.product_amount import ProductAmount
 from anydex.core.assetpair import AssetPair
 from anydex.core.message import TraderId
 from anydex.core.order import OrderId, OrderNumber
 from anydex.core.timestamp import Timestamp
 from anydex.core.transaction import Transaction, TransactionId
 from anydex.core.transaction_repository import MemoryTransactionRepository
+from anydex.test import util
 
 
 class MemoryTransactionRepositoryTestSuite(unittest.TestCase):
@@ -16,7 +17,7 @@ class MemoryTransactionRepositoryTestSuite(unittest.TestCase):
         # Object creation
         self.memory_transaction_repository = MemoryTransactionRepository(b'0' * 20)
         self.transaction_id = TransactionId(b'a' * 32)
-        self.transaction = Transaction(self.transaction_id, AssetPair(AssetAmount(10, 'BTC'), AssetAmount(10, 'MB')),
+        self.transaction = Transaction(self.transaction_id, AssetPair(ProductAmount(10, util.urn_btc), ProductAmount(10, util.urn_mb)),
                                        OrderId(TraderId(b'0' * 20), OrderNumber(1)),
                                        OrderId(TraderId(b'2' * 20), OrderNumber(2)), Timestamp(0))
 

@@ -13,6 +13,7 @@ import sys
 from asyncio import coroutine, get_event_loop, iscoroutinefunction, wait_for
 from functools import wraps
 
+from anydex.core.urn import URN
 
 logger = logging.getLogger(__name__)
 
@@ -224,3 +225,9 @@ _asyncio_catcher = UnhandledAsyncioExceptionCatcher()
 
 process_unhandled_exceptions = _catcher.check_exceptions
 process_unhandled_asyncio_exceptions = _asyncio_catcher.check_exceptions
+
+urn_btc = URN.generate_test()
+urn_mb = URN.generate_test()
+urn_eur = URN.generate_test()
+urn_dum1 = URN.generate_test()
+urn_dum2 = URN.generate_test()
